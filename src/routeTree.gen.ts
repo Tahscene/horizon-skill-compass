@@ -16,6 +16,10 @@ import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_auth
 import { Route as AuthenticatedForecastRouteImport } from './routes/_authenticated.forecast'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as AuthenticatedAdminStudentsRouteImport } from './routes/_authenticated.admin.students'
+import { Route as AuthenticatedAdminLogsRouteImport } from './routes/_authenticated.admin.logs'
+import { Route as AuthenticatedAdminForecastsRouteImport } from './routes/_authenticated.admin.forecasts'
+import { Route as AuthenticatedAdminStudentsUserIdRouteImport } from './routes/_authenticated.admin.students.$userId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,32 +56,67 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminStudentsRoute =
+  AuthenticatedAdminStudentsRouteImport.update({
+    id: '/students',
+    path: '/students',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminLogsRoute = AuthenticatedAdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminForecastsRoute =
+  AuthenticatedAdminForecastsRouteImport.update({
+    id: '/forecasts',
+    path: '/forecasts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStudentsUserIdRoute =
+  AuthenticatedAdminStudentsUserIdRouteImport.update({
+    id: '/$userId',
+    path: '/$userId',
+    getParentRoute: () => AuthenticatedAdminStudentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/forecast': typeof AuthenticatedForecastRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/admin/forecasts': typeof AuthenticatedAdminForecastsRoute
+  '/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRouteWithChildren
+  '/admin/students/$userId': typeof AuthenticatedAdminStudentsUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/forecast': typeof AuthenticatedForecastRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/admin/forecasts': typeof AuthenticatedAdminForecastsRoute
+  '/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/admin/students': typeof AuthenticatedAdminStudentsRouteWithChildren
+  '/admin/students/$userId': typeof AuthenticatedAdminStudentsUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/forecast': typeof AuthenticatedForecastRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/_authenticated/admin/forecasts': typeof AuthenticatedAdminForecastsRoute
+  '/_authenticated/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/_authenticated/admin/students': typeof AuthenticatedAdminStudentsRouteWithChildren
+  '/_authenticated/admin/students/$userId': typeof AuthenticatedAdminStudentsUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,8 +127,22 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forecast'
     | '/recommendations'
+    | '/admin/forecasts'
+    | '/admin/logs'
+    | '/admin/students'
+    | '/admin/students/$userId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/dashboard' | '/forecast' | '/recommendations'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/dashboard'
+    | '/forecast'
+    | '/recommendations'
+    | '/admin/forecasts'
+    | '/admin/logs'
+    | '/admin/students'
+    | '/admin/students/$userId'
   id:
     | '__root__'
     | '/'
@@ -99,6 +152,10 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/forecast'
     | '/_authenticated/recommendations'
+    | '/_authenticated/admin/forecasts'
+    | '/_authenticated/admin/logs'
+    | '/_authenticated/admin/students'
+    | '/_authenticated/admin/students/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,18 +215,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/students': {
+      id: '/_authenticated/admin/students'
+      path: '/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AuthenticatedAdminStudentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/logs': {
+      id: '/_authenticated/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AuthenticatedAdminLogsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/forecasts': {
+      id: '/_authenticated/admin/forecasts'
+      path: '/forecasts'
+      fullPath: '/admin/forecasts'
+      preLoaderRoute: typeof AuthenticatedAdminForecastsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/students/$userId': {
+      id: '/_authenticated/admin/students/$userId'
+      path: '/$userId'
+      fullPath: '/admin/students/$userId'
+      preLoaderRoute: typeof AuthenticatedAdminStudentsUserIdRouteImport
+      parentRoute: typeof AuthenticatedAdminStudentsRoute
+    }
   }
 }
 
+interface AuthenticatedAdminStudentsRouteChildren {
+  AuthenticatedAdminStudentsUserIdRoute: typeof AuthenticatedAdminStudentsUserIdRoute
+}
+
+const AuthenticatedAdminStudentsRouteChildren: AuthenticatedAdminStudentsRouteChildren =
+  {
+    AuthenticatedAdminStudentsUserIdRoute:
+      AuthenticatedAdminStudentsUserIdRoute,
+  }
+
+const AuthenticatedAdminStudentsRouteWithChildren =
+  AuthenticatedAdminStudentsRoute._addFileChildren(
+    AuthenticatedAdminStudentsRouteChildren,
+  )
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminForecastsRoute: typeof AuthenticatedAdminForecastsRoute
+  AuthenticatedAdminLogsRoute: typeof AuthenticatedAdminLogsRoute
+  AuthenticatedAdminStudentsRoute: typeof AuthenticatedAdminStudentsRouteWithChildren
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminForecastsRoute: AuthenticatedAdminForecastsRoute,
+  AuthenticatedAdminLogsRoute: AuthenticatedAdminLogsRoute,
+  AuthenticatedAdminStudentsRoute: AuthenticatedAdminStudentsRouteWithChildren,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedForecastRoute: typeof AuthenticatedForecastRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedForecastRoute: AuthenticatedForecastRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,

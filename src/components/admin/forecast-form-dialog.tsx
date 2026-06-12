@@ -41,8 +41,8 @@ const schema = z.object({
   country: z.string().trim().min(2).max(60),
   skill_name: z.string().trim().min(2).max(120),
   category: z.string().trim().min(2).max(80),
-  current_demand_index: z.coerce.number().min(0).max(100),
-  projected_5yr_multiplier: z.coerce.number().min(0.1).max(10),
+  current_demand_index: z.number().min(0).max(100),
+  projected_5yr_multiplier: z.number().min(0.1).max(10),
   source_note: z.string().max(500).optional().or(z.literal("")),
   status: z.enum(["active", "archived"]),
 });
@@ -62,7 +62,8 @@ export function ForecastFormDialog({
 }) {
   const isEdit = !!initial?.id;
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       country: "",
       skill_name: "",
@@ -94,7 +95,8 @@ export function ForecastFormDialog({
       if (isEdit && initial?.id) {
         const { error } = await supabase
           .from("skill_demand_forecasts")
-          .update(payload)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .update(payload as any)
           .eq("id", initial.id);
         if (error) throw error;
         await logActivity("forecast.updated", "skill_demand_forecasts", initial.id, {
@@ -105,7 +107,8 @@ export function ForecastFormDialog({
       } else {
         const { data, error } = await supabase
           .from("skill_demand_forecasts")
-          .insert(payload)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert(payload as any)
           .select()
           .single();
         if (error) throw error;
