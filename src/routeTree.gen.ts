@@ -13,7 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
-import { Route as AuthenticatedForecastsRouteImport } from './routes/_authenticated.forecasts'
+import { Route as AuthenticatedForecastRouteImport } from './routes/_authenticated.forecast'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 
@@ -37,9 +37,9 @@ const AuthenticatedRecommendationsRoute =
     path: '/recommendations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedForecastsRoute = AuthenticatedForecastsRouteImport.update({
-  id: '/forecasts',
-  path: '/forecasts',
+const AuthenticatedForecastRoute = AuthenticatedForecastRouteImport.update({
+  id: '/forecast',
+  path: '/forecast',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -58,7 +58,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/forecasts': typeof AuthenticatedForecastsRoute
+  '/forecast': typeof AuthenticatedForecastRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
 }
 export interface FileRoutesByTo {
@@ -66,7 +66,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/forecasts': typeof AuthenticatedForecastsRoute
+  '/forecast': typeof AuthenticatedForecastRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
 }
 export interface FileRoutesById {
@@ -76,7 +76,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/forecasts': typeof AuthenticatedForecastsRoute
+  '/_authenticated/forecast': typeof AuthenticatedForecastRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
 }
 export interface FileRouteTypes {
@@ -86,16 +86,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/dashboard'
-    | '/forecasts'
+    | '/forecast'
     | '/recommendations'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/admin'
-    | '/dashboard'
-    | '/forecasts'
-    | '/recommendations'
+  to: '/' | '/auth' | '/admin' | '/dashboard' | '/forecast' | '/recommendations'
   id:
     | '__root__'
     | '/'
@@ -103,7 +97,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
-    | '/_authenticated/forecasts'
+    | '/_authenticated/forecast'
     | '/_authenticated/recommendations'
   fileRoutesById: FileRoutesById
 }
@@ -143,11 +137,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecommendationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/forecasts': {
-      id: '/_authenticated/forecasts'
-      path: '/forecasts'
-      fullPath: '/forecasts'
-      preLoaderRoute: typeof AuthenticatedForecastsRouteImport
+    '/_authenticated/forecast': {
+      id: '/_authenticated/forecast'
+      path: '/forecast'
+      fullPath: '/forecast'
+      preLoaderRoute: typeof AuthenticatedForecastRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -170,14 +164,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedForecastsRoute: typeof AuthenticatedForecastsRoute
+  AuthenticatedForecastRoute: typeof AuthenticatedForecastRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedForecastsRoute: AuthenticatedForecastsRoute,
+  AuthenticatedForecastRoute: AuthenticatedForecastRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
 }
 
@@ -193,3 +187,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

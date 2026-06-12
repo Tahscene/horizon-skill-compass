@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function logActivity(action: string, entity: string, entityId?: string) {
+export async function logActivity(action: string, entity: string, entityId?: string | null) {
   const { data } = await supabase.auth.getUser();
   const uid = data.user?.id;
   if (!uid) return;
