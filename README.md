@@ -45,8 +45,8 @@ Recommendations can be saved or dismissed and progress is tracked on a personal 
 
 ## Architecture Highlights
 
-- Roles stored in a dedicated `user_roles` table, checked via a `has_role()` security definer function — separated from user profiles to prevent privilege escalation
-- Row-level security on every table, with owner only access by default and admin access governed by role checks
+- Roles stored in a dedicated `user_roles` table, checked via a `has_role()` security definer function, separated from user profiles to prevent privilege escalation
+- Row level security on every table, with owner only access by default and admin access governed by role checks
 - AI recommendation generation uses a single, structured call against a curated demand dataset, with a deterministic keyword matching fallback ensuring identical UI behavior regardless of AI availability
 - Activity log captures every create, edit and delete action with before/after values
 
@@ -71,6 +71,6 @@ The project uses Lovable Cloud for authentication and database. Connect a Lovabl
 
 ## Project Status
 
-This project was built as a rapid production sprint MVP. Core flows: authentication, role-based access, the AI recommendation engine with fallback, and the admin console — are functional end to end with sample data.
+This project was built as a rapid production sprint MVP. Core flows: authentication, role based access, the AI recommendation engine with fallback, and the admin console; are functional end to end with sample data.
 
 
