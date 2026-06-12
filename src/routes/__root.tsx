@@ -93,7 +93,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Know where your skills will be in demand — before you choose your path.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SkillHorizon AI" },
+      {
+        name: "twitter:description",
+        content: "Know where your skills will be in demand — before you choose your path.",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
