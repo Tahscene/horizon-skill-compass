@@ -156,7 +156,7 @@ export function ForecastFormDialog({
               <Input
                 type="number"
                 step="1"
-                {...form.register("current_demand_index")}
+                {...form.register("current_demand_index", { valueAsNumber: true })}
               />
             </Field>
             <Field
@@ -166,7 +166,7 @@ export function ForecastFormDialog({
               <Input
                 type="number"
                 step="0.1"
-                {...form.register("projected_5yr_multiplier")}
+                {...form.register("projected_5yr_multiplier", { valueAsNumber: true })}
               />
             </Field>
           </div>
