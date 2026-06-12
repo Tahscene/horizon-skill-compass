@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, Users } from "lucide-react";
 
 import { AdminGate } from "@/components/admin/admin-gate";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState, ErrorState, LoadingRows } from "@/components/state-views";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/students")({
@@ -111,64 +112,114 @@ function StudentsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-surface">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Skill area</TableHead>
-                <TableHead>Education</TableHead>
-                <TableHead className="text-right">Saved</TableHead>
-                <TableHead className="text-right">Total recs</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {q.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    Loading…
-                  </TableCell>
-                </TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    No students found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((r) => (
-                  <TableRow key={r.user_id} className="cursor-pointer hover:bg-muted/30">
-                    <TableCell className="font-medium">
-                      <Link
-                        to="/admin/students/$userId"
-                        params={{ userId: r.user_id }}
-                        className="hover:underline"
-                      >
-                        {r.full_name ?? "Unnamed"}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{r.current_skill_area ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.education_level ?? "—"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.saved}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.total}</TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        to="/admin/students/$userId"
-                        params={{ userId: r.user_id }}
-                        className="inline-flex items-center text-sm text-primary"
-                      >
-                        View <ChevronRight className="h-4 w-4" />
-                      </Link>
-                    </TableCell>
-                  </TableRow>
+      {q.isError ? (
+        <ErrorState
+          title="Couldn't load students"
+          message={(q.error as Error)?.message}
+          onRetry={() => q.refetch()}
+        />
+      ) : !q.isLoading && filtered.length === 0 ? (
+        <EmptyState
+          icon={<Users className="h-6 w-6" />}
+          title="No students yet"
+          description="Student profiles will show up here once they sign up."
+        />
+      ) : (
+        <>
+          {/* Mobile */}
+          <div className="space-y-2 md:hidden">
+            {q.isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="border-border bg-surface">
+                    <CardContent className="p-4">
+                      <LoadingRows rows={2} cols={2} />
+                    </CardContent>
+                  </Card>
                 ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              : filtered.map((r) => (
+                  <Link
+                    key={r.user_id}
+                    to="/admin/students/$userId"
+                    params={{ userId: r.user_id }}
+                  >
+                    <Card className="border-border bg-surface transition hover:bg-muted/30">
+                      <CardContent className="flex items-center justify-between gap-3 p-4">
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{r.full_name ?? "Unnamed"}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {r.current_skill_area ?? "—"} · {r.education_level ?? "—"}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <div className="text-xs text-muted-foreground">Saved</div>
+                          <div className="font-semibold tabular-nums">{r.saved}</div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+          </div>
+
+          {/* Desktop table */}
+          <Card className="hidden border-border bg-surface md:block">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Skill area</TableHead>
+                    <TableHead>Education</TableHead>
+                    <TableHead className="text-right">Saved</TableHead>
+                    <TableHead className="text-right">Total recs</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {q.isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="p-0">
+                        <LoadingRows rows={5} cols={6} />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filtered.map((r) => (
+                      <TableRow key={r.user_id} className="cursor-pointer hover:bg-muted/30">
+                        <TableCell className="font-medium">
+                          <Link
+                            to="/admin/students/$userId"
+                            params={{ userId: r.user_id }}
+                            className="hover:underline"
+                          >
+                            {r.full_name ?? "Unnamed"}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {r.current_skill_area ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {r.education_level ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">{r.saved}</TableCell>
+                        <TableCell className="text-right tabular-nums">{r.total}</TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            to="/admin/students/$userId"
+                            params={{ userId: r.user_id }}
+                            className="inline-flex items-center text-sm text-primary"
+                          >
+                            View <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

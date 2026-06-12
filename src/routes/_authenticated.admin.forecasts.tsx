@@ -40,6 +40,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { logActivity } from "@/lib/activity";
+import { EmptyState, ErrorState, LoadingRows } from "@/components/state-views";
+import { Database } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/forecasts")({
   head: () => ({ meta: [{ title: "Forecasts — Admin" }] }),
@@ -225,75 +227,70 @@ function AdminForecastsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-surface">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <SortableHead
-                  active={sortKey === "country"}
-                  asc={sortAsc}
-                  onClick={() => toggleSort("country")}
-                >
-                  Country
-                </SortableHead>
-                <TableHead>Skill</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Demand idx</TableHead>
-                <SortableHead
-                  active={sortKey === "projected_5yr_multiplier"}
-                  asc={sortAsc}
-                  onClick={() => toggleSort("projected_5yr_multiplier")}
-                  align="right"
-                >
-                  5yr ×
-                </SortableHead>
-                <TableHead>Status</TableHead>
-                <SortableHead
-                  active={sortKey === "updated_at"}
-                  asc={sortAsc}
-                  onClick={() => toggleSort("updated_at")}
-                >
-                  Updated
-                </SortableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {q.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                    Loading…
-                  </TableCell>
-                </TableRow>
-              ) : pageRows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                    No forecasts match your filters.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                pageRows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.country}</TableCell>
-                    <TableCell>{r.skill_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.category}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {Number(r.current_demand_index).toFixed(0)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-semibold">
-                      {Number(r.projected_5yr_multiplier).toFixed(2)}×
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={r.status === "active" ? "default" : "secondary"}>
-                        {r.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(r.updated_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
+      {q.isError ? (
+        <ErrorState
+          title="Couldn't load forecasts"
+          message={(q.error as Error)?.message}
+          onRetry={() => q.refetch()}
+        />
+      ) : !q.isLoading && filtered.length === 0 ? (
+        <EmptyState
+          icon={<Database className="h-6 w-6" />}
+          title={rows.length === 0 ? "No forecasts yet" : "No forecasts match your filters"}
+          description={
+            rows.length === 0
+              ? "Create the first row of the dataset that powers student predictions."
+              : "Try clearing a filter or broadening your search."
+          }
+          action={
+            rows.length === 0 ? (
+              <Button
+                className="gap-2"
+                onClick={() => {
+                  setEditing(null);
+                  setOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" /> New forecast
+              </Button>
+            ) : null
+          }
+        />
+      ) : (
+        <>
+          {/* Mobile card list */}
+          <div className="space-y-2 md:hidden">
+            {q.isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="border-border bg-surface">
+                    <CardContent className="p-4">
+                      <LoadingRows rows={2} cols={2} />
+                    </CardContent>
+                  </Card>
+                ))
+              : pageRows.map((r) => (
+                  <Card key={r.id} className="border-border bg-surface">
+                    <CardContent className="space-y-2 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{r.skill_name}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {r.country} · {r.category}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <div className="text-sm font-semibold tabular-nums">
+                            {Number(r.projected_5yr_multiplier).toFixed(2)}×
+                          </div>
+                          <Badge
+                            variant={r.status === "active" ? "default" : "secondary"}
+                            className="mt-1"
+                          >
+                            {r.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-1 pt-1">
                         <Button
                           size="icon"
                           variant="ghost"
@@ -331,14 +328,122 @@ function AdminForecastsPage() {
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                    </TableCell>
+                    </CardContent>
+                  </Card>
+                ))}
+          </div>
+
+          {/* Desktop table */}
+          <Card className="hidden border-border bg-surface md:block">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <SortableHead
+                      active={sortKey === "country"}
+                      asc={sortAsc}
+                      onClick={() => toggleSort("country")}
+                    >
+                      Country
+                    </SortableHead>
+                    <TableHead>Skill</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Demand idx</TableHead>
+                    <SortableHead
+                      active={sortKey === "projected_5yr_multiplier"}
+                      asc={sortAsc}
+                      onClick={() => toggleSort("projected_5yr_multiplier")}
+                      align="right"
+                    >
+                      5yr ×
+                    </SortableHead>
+                    <TableHead>Status</TableHead>
+                    <SortableHead
+                      active={sortKey === "updated_at"}
+                      asc={sortAsc}
+                      onClick={() => toggleSort("updated_at")}
+                    >
+                      Updated
+                    </SortableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {q.isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="p-0">
+                        <LoadingRows rows={6} cols={8} />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    pageRows.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-medium">{r.country}</TableCell>
+                        <TableCell>{r.skill_name}</TableCell>
+                        <TableCell className="text-muted-foreground">{r.category}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {Number(r.current_demand_index).toFixed(0)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums font-semibold">
+                          {Number(r.projected_5yr_multiplier).toFixed(2)}×
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={r.status === "active" ? "default" : "secondary"}>
+                            {r.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {new Date(r.updated_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditing(r);
+                                setOpen(true);
+                              }}
+                              aria-label="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                setConfirm({
+                                  kind: r.status === "active" ? "archive" : "restore",
+                                  row: r,
+                                })
+                              }
+                              aria-label={r.status === "active" ? "Archive" : "Restore"}
+                            >
+                              {r.status === "active" ? (
+                                <Archive className="h-4 w-4" />
+                              ) : (
+                                <ArchiveRestore className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => setConfirm({ kind: "delete", row: r })}
+                              aria-label="Delete"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
