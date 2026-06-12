@@ -14,16 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          timestamp: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          timestamp?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          timestamp?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_skill_area: string | null
+          education_level: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_skill_area?: string | null
+          education_level?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_skill_area?: string | null
+          education_level?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      skill_demand_forecasts: {
+        Row: {
+          category: string
+          country: Database["public"]["Enums"]["country_code"]
+          created_at: string
+          current_demand_index: number
+          id: string
+          projected_5yr_multiplier: number
+          skill_name: string
+          source_note: string | null
+          status: Database["public"]["Enums"]["forecast_status"]
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          country: Database["public"]["Enums"]["country_code"]
+          created_at?: string
+          current_demand_index?: number
+          id?: string
+          projected_5yr_multiplier?: number
+          skill_name: string
+          source_note?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          country?: Database["public"]["Enums"]["country_code"]
+          created_at?: string
+          current_demand_index?: number
+          id?: string
+          projected_5yr_multiplier?: number
+          skill_name?: string
+          source_note?: string | null
+          status?: Database["public"]["Enums"]["forecast_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_recommendations: {
+        Row: {
+          ai_rationale: string | null
+          country: string
+          created_at: string
+          id: string
+          projected_multiplier: number
+          skill_name: string
+          status: Database["public"]["Enums"]["recommendation_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_rationale?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          projected_multiplier?: number
+          skill_name: string
+          status?: Database["public"]["Enums"]["recommendation_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_rationale?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          projected_multiplier?: number
+          skill_name?: string
+          status?: Database["public"]["Enums"]["recommendation_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "standard_user"
+      country_code: "Canada" | "Germany" | "Australia" | "UAE"
+      forecast_status: "active" | "archived"
+      recommendation_status: "saved" | "dismissed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +320,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "standard_user"],
+      country_code: ["Canada", "Germany", "Australia", "UAE"],
+      forecast_status: ["active", "archived"],
+      recommendation_status: ["saved", "dismissed"],
+    },
   },
 } as const
