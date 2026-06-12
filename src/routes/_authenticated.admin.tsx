@@ -82,29 +82,41 @@ function AdminOverview() {
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          icon={<Database className="h-5 w-5" />}
-          label="Active forecasts"
-          value={d ? String(d.activeCount) : "—"}
+      {q.isError && (
+        <ErrorState
+          title="Couldn't load admin overview"
+          message={(q.error as Error)?.message}
+          onRetry={() => q.refetch()}
         />
-        <KpiCard
-          icon={<Users className="h-5 w-5" />}
-          label="Students"
-          value={d ? String(d.studentCount) : "—"}
-        />
-        <KpiCard
-          icon={<Sparkles className="h-5 w-5" />}
-          label="Recommendations"
-          value={d ? String(d.recsCount) : "—"}
-        />
-        <KpiCard
-          icon={<Flame className="h-5 w-5" />}
-          label="Avg 5yr multiplier"
-          value={d ? `${d.avgMult.toFixed(2)}×` : "—"}
-          hot={!!d && d.avgMult >= 2}
-        />
-      </div>
+      )}
+
+      {q.isLoading ? (
+        <KpiSkeletonGrid />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            icon={<Database className="h-5 w-5" />}
+            label="Active forecasts"
+            value={d ? String(d.activeCount) : "—"}
+          />
+          <KpiCard
+            icon={<Users className="h-5 w-5" />}
+            label="Students"
+            value={d ? String(d.studentCount) : "—"}
+          />
+          <KpiCard
+            icon={<Sparkles className="h-5 w-5" />}
+            label="Recommendations"
+            value={d ? String(d.recsCount) : "—"}
+          />
+          <KpiCard
+            icon={<Flame className="h-5 w-5" />}
+            label="Avg 5yr multiplier"
+            value={d ? `${d.avgMult.toFixed(2)}×` : "—"}
+            hot={!!d && d.avgMult >= 2}
+          />
+        </div>
+      )}
 
       <Card className="border-border bg-surface">
         <CardContent className="p-6">
