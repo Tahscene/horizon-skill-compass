@@ -87,18 +87,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "AI-powered forecasts of where your skills will be in demand across Canada, Germany, Australia and the UAE.",
       },
-      { property: "og:title", content: "SkillHorizon AI" },
+      { property: "og:title", content: "SkillHorizon AI — Global Skill Demand Forecasts" },
       {
         property: "og:description",
         content: "Know where your skills will be in demand — before you choose your path.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "SkillHorizon AI" },
+      { name: "twitter:title", content: "SkillHorizon AI — Global Skill Demand Forecasts" },
       {
         name: "twitter:description",
         content: "Know where your skills will be in demand — before you choose your path.",
       },
+      { name: "description", content: "An AI system that predicts future skill demand  in Canada, Germany, Australia and UAE using labor market trends and AI forecasting" },
+      { property: "og:description", content: "An AI system that predicts future skill demand  in Canada, Germany, Australia and UAE using labor market trends and AI forecasting" },
+      { name: "twitter:description", content: "An AI system that predicts future skill demand  in Canada, Germany, Australia and UAE using labor market trends and AI forecasting" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/1842b096-76ef-4726-b667-f98a88f023f2" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/1842b096-76ef-4726-b667-f98a88f023f2" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
