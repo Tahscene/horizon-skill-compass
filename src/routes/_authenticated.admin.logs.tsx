@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, ScrollText } from "lucide-react";
 
 import { AdminGate } from "@/components/admin/admin-gate";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,73 +144,81 @@ function LogsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-surface">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>When</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Entity</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Detail</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {q.isLoading ? (
+      {q.isError ? (
+        <ErrorState
+          title="Couldn't load activity log"
+          message={(q.error as Error)?.message}
+          onRetry={() => q.refetch()}
+        />
+      ) : !q.isLoading && filtered.length === 0 ? (
+        <EmptyState
+          icon={<ScrollText className="h-6 w-6" />}
+          title="No log entries yet"
+          description="Forecast and recommendation changes will appear here as they happen."
+        />
+      ) : (
+        <Card className="border-border bg-surface">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                    Loading…
-                  </TableCell>
+                  <TableHead>When</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Entity</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Detail</TableHead>
                 </TableRow>
-              ) : pageRows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                    No log entries.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                pageRows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                      {new Date(r.timestamp).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{r.action}</Badge>
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      <div className="font-medium">{r.entity}</div>
-                      <div className="text-muted-foreground truncate max-w-[180px]">
-                        {r.entity_id ?? "—"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.profiles?.full_name ?? r.user_id.slice(0, 8)}
-                    </TableCell>
-                    <TableCell>
-                      {r.old_value || r.new_value ? (
-                        <Collapsible>
-                          <CollapsibleTrigger asChild>
-                            <Button size="sm" variant="ghost" className="h-7 text-xs">
-                              View diff
-                            </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
-                            <JsonBlock label="Before" value={r.old_value} />
-                            <JsonBlock label="After" value={r.new_value} />
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
+              </TableHeader>
+              <TableBody>
+                {q.isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="p-0">
+                      <LoadingRows rows={6} cols={5} />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                ) : (
+                  pageRows.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                        {new Date(r.timestamp).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{r.action}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        <div className="font-medium">{r.entity}</div>
+                        <div className="text-muted-foreground truncate max-w-[180px]">
+                          {r.entity_id ?? "—"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {r.profiles?.full_name ?? r.user_id.slice(0, 8)}
+                      </TableCell>
+                      <TableCell>
+                        {r.old_value || r.new_value ? (
+                          <Collapsible>
+                            <CollapsibleTrigger asChild>
+                              <Button size="sm" variant="ghost" className="h-7 text-xs">
+                                View diff
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
+                              <JsonBlock label="Before" value={r.old_value} />
+                              <JsonBlock label="After" value={r.new_value} />
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
