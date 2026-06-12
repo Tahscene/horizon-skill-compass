@@ -13,6 +13,7 @@ import { Sparkles, Flame, Globe2, ArrowRight, BarChart3 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/state-views";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -87,6 +88,14 @@ function Dashboard() {
           </Button>
         </Link>
       </header>
+
+      {stats.isError && (
+        <ErrorState
+          title="Couldn't load dashboard stats"
+          message={(stats.error as Error)?.message}
+          onRetry={() => stats.refetch()}
+        />
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
