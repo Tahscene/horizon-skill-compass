@@ -1,5 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Globe2, Sparkles, Shield, LogOut } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { LayoutDashboard, Sparkles, Shield, LogOut, Bookmark, Flame } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,15 +12,13 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Flame } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "@tanstack/react-router";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Forecasts", url: "/forecasts", icon: Globe2 },
-  { title: "My Recommendations", url: "/recommendations", icon: Sparkles },
+  { title: "Forecast", url: "/forecast", icon: Sparkles },
+  { title: "My Recommendations", url: "/recommendations", icon: Bookmark },
 ];
 
 export function AppSidebar() {
