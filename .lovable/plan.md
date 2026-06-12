@@ -1,100 +1,88 @@
-# Phase 3b — Admin Forecast Management & Student Analytics
+# Phase 4 — Resilience, Edge Cases & Polish
 
-## Routes (new + replace)
+## 1. Shared state primitives
 
-Replace placeholder `/admin` and add three children. Using flat dot-naming:
+Add `src/components/state-views.tsx` exporting:
+- `EmptyState({ icon, title, description, action? })`
+- `ErrorState({ title?, message, onRetry })`
+- `LoadingRows({ rows, cols })` for table skeletons
 
-- `src/routes/_authenticated.admin.tsx` → real KPI dashboard (replaces placeholder)
-- `src/routes/_authenticated.admin.forecasts.tsx` → CRUD table
-- `src/routes/_authenticated.admin.students.tsx` → list of standard users
-- `src/routes/_authenticated.admin.students.$userId.tsx` → read-only detail
-- `src/routes/_authenticated.admin.logs.tsx` → activity log viewer
+Reuse across pages so visuals are consistent.
 
-All four wrapped by a shared admin gate component (`AdminGate`) that returns "Access denied" unless `useAuth().role === 'admin'` (server-side enforcement remains via RLS — admin policies already exist on these tables).
+## 2. Per-page wiring
 
-## Sidebar
+**`/forecast`** (Phase 3a)
+- Polish existing AI error: when `mutation.isError`, render new `ErrorState` (currently inline) with explicit "AI generation failed — showing nothing yet" copy + `Retry` calling `mutation.mutate(lastInput)`.
+- Pre-generation empty: replace current placeholder with `EmptyState` (Sparkles icon, "Pick a skill area to begin", CTA scrolls to form).
+- Grid: confirm `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` (already mostly there — audit + tighten).
 
-Expand the existing `Admin` group in `app-sidebar.tsx` to include: Overview, Forecasts, Students, Logs (each as a `SidebarMenuItem` under the existing admin group, visible only when `role === 'admin'`).
+**`/recommendations`**
+- Add `ErrorState` when the list query errors (currently silent).
+- Empty Saved tab: bookmark icon + "No saved recommendations yet" + CTA `Link to /forecast`.
+- Empty Dismissed tab: archive icon + neutral copy.
 
-## /admin (Overview)
+**`/dashboard`**
+- Add `ErrorState` for stats query error.
+- Loading skeletons for KPI cards (replace `"—"` placeholder with subtle pulse).
+- Already has chart empty state — keep.
 
-KPI cards:
-1. Active forecasts → `count(*) where status='active'`
-2. Total students → `count(*) from profiles` (filtered to standard_user via user_roles)
-3. Recommendations generated → `count(*) from skill_recommendations`
-4. Avg projected 5yr multiplier → `avg(projected_5yr_multiplier) where status='active'`
+**`/admin` overview**
+- Add `ErrorState` + `LoadingRows`-style skeleton KPIs.
 
-Recharts bar chart: avg multiplier per country (active only). Reuse the dashboard chart styling.
+**`/admin/forecasts`**
+- Replace "Loading…" / "No forecasts match" rows with `LoadingRows` and `EmptyState` (Database icon, "No forecasts yet — create one to feed the predictor", CTA opens dialog).
+- Add error row when query fails.
 
-Data loading via TanStack Query (parallel `useQuery` calls against `supabase` browser client; admin RLS policy lets admins read all rows).
+**`/admin/students`** and **`/admin/logs`**
+- Same treatment (loading skeleton rows + EmptyState + ErrorState).
 
-## /admin/forecasts (CRUD)
+## 3. Mobile
 
-Table columns: country, skill_name, category, current_demand_index, projected_5yr_multiplier, status, updated_at, actions.
+**`/forecast`** — single-column cards <768px (already `md:grid-cols-2`; verify gap + form stacks).
 
-Controls:
-- Search (skill_name ILIKE)
-- Filter dropdowns: country, category, status (active/archived)
-- Sort: clickable column headers (country, multiplier, updated_at)
-- Pagination: 15/page
+**`/dashboard`** — KPI cards already `md:grid-cols-3`; ensure header wraps via `grid-cols-[minmax(0,1fr)_auto]` pattern.
 
-Create/Edit: shadcn `Dialog` with `react-hook-form` + `zod`:
-- country (text, 2–60 chars)
-- skill_name (required)
-- category (required)
-- current_demand_index (number 0–100)
-- projected_5yr_multiplier (number 0.1–10, step 0.1)
-- source_note (textarea, optional)
-- status (select: active | archived)
+**`/admin` tables** — Wrap each table page in a responsive switcher:
+- ≥`md`: existing `<Table>`.
+- `<md`: render mapped list of compact cards (using `EmptyState` when zero). Implementation: `hidden md:block` for the table card; `md:hidden space-y-2` list of `<Card>` summaries showing the 2–3 most important columns + actions.
 
-Archive vs Delete: `AlertDialog` confirms. Archive sets `status='archived'`; Delete removes row. Both write to activity_log.
+Apply to: `/admin/forecasts`, `/admin/students`, `/admin/logs`.
 
-Audit trail — extend `src/lib/activity.ts` with an optional payload:
-```ts
-logActivity(action, entity, entityId, { old_value?, new_value? })
-```
-Insert old/new JSON into existing `activity_log` columns (already present per schema).
+## 4. Theme audit
 
-Actions logged: `forecast.created`, `forecast.updated`, `forecast.archived`, `forecast.deleted`.
+No code-level token changes expected. Verify by:
+- Toggling theme switcher (crimson/amber × dark/light) on `/forecast`, `/dashboard`, `/admin` and screenshotting.
+- Inspect `MultiplierBadge` contrast — if the amber+light combo is weak, tighten its token in `src/components/multiplier-badge.tsx` (use `text-primary-foreground` on filled background instead of theme-foreground).
+- Adjust `flame-glow` halo only if necessary; otherwise leave.
 
-## /admin/students
+## 5. Roadmap
 
-Query: `profiles` left-joined to `user_roles` filtered to `standard_user`, with `skill_recommendations` count via a `select('*, skill_recommendations(count)')` PostgREST embed.
+Add `src/routes/roadmap.tsx` (public route) listing Phase 5+ items as content cards:
+- Live labor-market API integration (government employment data, job-posting APIs)
+- AI career coaching chat
+- Curriculum gap analytics for institutions
+- Graduate outcome tracking dashboard
 
-Table: full_name, current_skill_area, education_level, saved count (status='saved'), total recs. Row click → navigate to `/admin/students/$userId`.
+Add a `Roadmap` link to the landing page footer (`src/routes/index.tsx`).
 
-Detail page: read-only — profile header + list of all their `skill_recommendations` (using existing `RecommendationCard` in read-only mode — pass an `actionsHidden` prop and add that prop to the card so save/dismiss buttons hide). No mutations.
+## 6. Validation
 
-## /admin/logs
+Click through:
+- /forecast: submit invalid → form error; submit valid offline → fallback OR error retry path.
+- /recommendations: empty saved tab → CTA jumps to /forecast.
+- /admin/forecasts: archive last forecast → empty state renders; click "New" from empty state opens dialog.
+- Resize to 360px width → tables become card lists, no horizontal scroll.
+- Cycle theme switcher on all 3 areas; confirm multiplier badge legibility in each combo.
 
-Table of `activity_log` joined to `profiles` (user name). Filters: action type select (distinct actions), text search on entity. Pagination 25/page. Render old/new JSON in collapsible row when present.
+## Out of scope
 
-## Components (new)
+- New tables / migrations
+- New AI prompts
+- Animations beyond existing `flame-glow`
 
-- `src/components/admin/forecast-form-dialog.tsx` — create/edit dialog
-- `src/components/admin/confirm-dialog.tsx` — generic alert wrapper
-- `src/components/admin/kpi-card.tsx` — stat card
-- `src/components/admin/admin-gate.tsx` — role guard wrapper
+## Files touched
 
-## Activity helper extension
+- New: `src/components/state-views.tsx`, `src/routes/roadmap.tsx`
+- Edited: `_authenticated.forecast.tsx`, `_authenticated.recommendations.tsx`, `_authenticated.dashboard.tsx`, `_authenticated.admin.tsx`, `_authenticated.admin.forecasts.tsx`, `_authenticated.admin.students.tsx`, `_authenticated.admin.logs.tsx`, `multiplier-badge.tsx` (only if contrast needs nudge), `index.tsx` (footer link)
 
-`src/lib/activity.ts` updated signature is backward-compatible — extra param defaults to `{}`. All existing Phase 3a calls keep working.
-
-## Validation walkthrough
-
-1. Sign in as standard_user → visit `/admin/forecasts` → see "Access denied".
-2. Promote self to admin (manual SQL via support) → sidebar shows Admin items.
-3. Create forecast → row appears, `activity_log` shows `forecast.created` with `new_value` JSON.
-4. Edit multiplier → log entry has old & new values.
-5. Archive → row status flips; `/forecast` no longer surfaces archived rows (existing query already filters `status='active'`).
-6. Student page count matches `select count(*) from skill_recommendations where user_id=...`.
-
-## Out of scope (later phases)
-
-- Live labor-market API ingestion (Phase 5+)
-- Bulk CSV import/export
-- Role-grant UI (Phase 4)
-
-## Tech notes
-
-No new packages, no migrations — schema from Phase 1+2 already supports old_value/new_value JSON columns. All reads/writes via the browser supabase client governed by existing admin RLS policies.
+No package installs. No schema changes.
