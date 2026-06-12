@@ -169,9 +169,12 @@ function Landing() {
           <span className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} SkillHorizon AI
           </span>
-          <span className="text-xs text-muted-foreground">
-            Built for students, curriculum leads & workforce analysts.
-          </span>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link to="/roadmap" className="hover:text-foreground">
+              Roadmap
+            </Link>
+            <span>Built for students, curriculum leads & workforce analysts.</span>
+          </div>
         </div>
       </footer>
     </div>
