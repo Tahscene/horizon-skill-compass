@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trash2, Undo2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bookmark, Trash2, Undo2, ChevronLeft, ChevronRight, Archive, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
   type RecommendationView,
 } from "@/components/recommendation-card";
 import { RecommendationSkeletonGrid } from "@/components/card-skeleton";
+import { EmptyState, ErrorState } from "@/components/state-views";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -131,20 +132,33 @@ function RecsPage() {
 
       {query.isLoading ? (
         <RecommendationSkeletonGrid />
+      ) : query.isError ? (
+        <ErrorState
+          title="Couldn't load your recommendations"
+          message={(query.error as Error)?.message}
+          onRetry={() => query.refetch()}
+        />
       ) : (query.data?.rows.length ?? 0) === 0 ? (
-        <Card className="border-dashed border-border bg-surface">
-          <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/15 text-primary">
-              <Bookmark className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-semibold">
-              Nothing {tab === "saved" ? "saved" : "dismissed"} yet
-            </h3>
-            <p className="max-w-md text-sm text-muted-foreground">
-              Generate a forecast and save the markets you want to explore further.
-            </p>
-          </CardContent>
-        </Card>
+        tab === "saved" ? (
+          <EmptyState
+            icon={<Bookmark className="h-6 w-6" />}
+            title="No saved recommendations yet"
+            description="Generate a forecast and save the markets you want to explore further."
+            action={
+              <Link to="/forecast">
+                <Button size="sm" className="gap-2">
+                  <Sparkles className="h-4 w-4" /> Generate a forecast
+                </Button>
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<Archive className="h-6 w-6" />}
+            title="No dismissed recommendations"
+            description="Dismissed recommendations land here so you can restore them later."
+          />
+        )
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
