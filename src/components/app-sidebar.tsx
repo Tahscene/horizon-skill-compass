@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Sparkles, Shield, LogOut, Bookmark, Flame } from "lucide-react";
+import { LayoutDashboard, Sparkles, Shield, LogOut, Bookmark, Flame, Database, Users, ScrollText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -61,14 +61,24 @@ export function AppSidebar() {
             <SidebarGroupLabel>Admin</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive("/admin")}>
-                    <Link to="/admin">
-                      <Shield className="h-4 w-4" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {[
+                  { title: "Overview", url: "/admin", icon: Shield },
+                  { title: "Forecasts", url: "/admin/forecasts", icon: Database },
+                  { title: "Students", url: "/admin/students", icon: Users },
+                  { title: "Activity log", url: "/admin/logs", icon: ScrollText },
+                ].map((i) => (
+                  <SidebarMenuItem key={i.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={i.url === "/admin" ? pathname === "/admin" : isActive(i.url)}
+                    >
+                      <Link to={i.url}>
+                        <i.icon className="h-4 w-4" />
+                        <span>{i.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

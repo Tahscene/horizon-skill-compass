@@ -21,6 +21,8 @@ export type Database = {
           entity: string
           entity_id: string | null
           id: string
+          new_value: Json | null
+          old_value: Json | null
           timestamp: string
           updated_at: string
           user_id: string | null
@@ -31,6 +33,8 @@ export type Database = {
           entity: string
           entity_id?: string | null
           id?: string
+          new_value?: Json | null
+          old_value?: Json | null
           timestamp?: string
           updated_at?: string
           user_id?: string | null
@@ -41,6 +45,8 @@ export type Database = {
           entity?: string
           entity_id?: string | null
           id?: string
+          new_value?: Json | null
+          old_value?: Json | null
           timestamp?: string
           updated_at?: string
           user_id?: string | null
