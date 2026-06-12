@@ -14,6 +14,7 @@ import { BarChart3, Database, Flame, Sparkles, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminGate } from "@/components/admin/admin-gate";
 import { KpiCard } from "@/components/admin/kpi-card";
+import { ErrorState, KpiSkeletonGrid } from "@/components/state-views";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
